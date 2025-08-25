@@ -48,6 +48,7 @@ resource "aws_instance" "al2023_x86_64" {
   user_data              = local.install_docker_user_data
   vpc_security_group_ids = [aws_security_group.ec2_outbound_all.id]
   tags                   = { Name = "soci-v2-al2023-x86_64" }
+  depends_on             = [module.vpc]
 }
 
 resource "aws_instance" "al2023_arm64" {
@@ -57,6 +58,7 @@ resource "aws_instance" "al2023_arm64" {
   user_data              = local.install_docker_user_data
   vpc_security_group_ids = [aws_security_group.ec2_outbound_all.id]
   tags                   = { Name = "soci-v2-al2023-arm64" }
+  depends_on             = [module.vpc]
 }
 
 output "al2023_x86_64_private_ip" {

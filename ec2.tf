@@ -61,18 +61,24 @@ resource "aws_instance" "al2023_arm64" {
   depends_on             = [module.vpc]
 }
 
-output "al2023_x86_64_private_ip" {
-  value = aws_instance.al2023_x86_64.private_ip
+output "ec2_instance_connect_cli_arm64" {
+  value = <<EOF
+  aws ec2-instance-connect ssh \
+   --region ${data.aws_region.current.name} \
+   --instance-id ${aws_instance.al2023_arm64.id} \
+   --instance-ip ${aws_instance.al2023_arm64.private_ip} \
+   --connection-type eice \
+   --os-user ec2-user
+  EOF
 }
 
-output "al2023_arm64_private_ip" {
-  value = aws_instance.al2023_arm64.private_ip
-}
-
-output "al2023_x86_64_id" {
-  value = aws_instance.al2023_x86_64.id
-}
-
-output "al2023_arm64_id" {
-  value = aws_instance.al2023_arm64.id
+output "ec2_instance_connect_cli_x86_64" {
+  value = <<EOF
+  aws ec2-instance-connect ssh \
+   --region ${data.aws_region.current.name} \
+   --instance-id ${aws_instance.al2023_x86_64.id} \
+   --instance-ip ${aws_instance.al2023_x86_64.private_ip} \
+   --connection-type eice \
+   --os-user ec2-user
+  EOF
 }

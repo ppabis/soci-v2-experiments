@@ -1,0 +1,13 @@
+.git
+.DS_Store
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+.pytest_cache/
+.venv/
+.env
+Dockerfile*
+*.log
+

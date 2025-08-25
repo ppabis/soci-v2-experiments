@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>ECS Task Metadata</title>
+    <style>
+      body { font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif; margin: 24px; }
+      h1 { margin-bottom: 8px; }
+      h2 { margin-top: 24px; }
+      table { width: 100%; border-collapse: collapse; }
+      th, td { border: 1px solid #ddd; padding: 8px; vertical-align: top; }
+      th { background: #f7f7f7; text-align: left; }
+      code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+    </style>
+  </head>
+  <body>
+    <h1>ECS Metadata</h1>
+    <p><strong>Execution Environment:</strong> {{ execution_env or "(not set)" }}</p>
+
+    <h2>Task Metadata</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Key</th>
+          <th>Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% if task_metadata %}
+          {% for key, value in task_metadata.items() %}
+          <tr>
+            <td><code>{{ key }}</code></td>
+            <td><pre style="margin:0">{{ value | tojson(indent=2) }}</pre></td>
+          </tr>
+          {% endfor %}
+        {% else %}
+          <tr><td colspan="2"><em>No task metadata available.</em></td></tr>
+        {% endif %}
+      </tbody>
+    </table>
+
+    <h2>Container Metadata</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Key</th>
+          <th>Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% if container_metadata %}
+          {% for key, value in container_metadata.items() %}
+          <tr>
+            <td><code>{{ key }}</code></td>
+            <td><pre style="margin:0">{{ value | tojson(indent=2) }}</pre></td>
+          </tr>
+          {% endfor %}
+        {% else %}
+          <tr><td colspan="2"><em>No container metadata available.</em></td></tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </body>
+</html>
+
+

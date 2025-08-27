@@ -1,5 +1,6 @@
 resource "aws_ecr_repository" "soci_repo" {
-  name = "soci-repo"
+  name         = "soci-repo"
+  force_delete = true
 }
 
 output "ecr_repo_url" {

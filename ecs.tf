@@ -22,15 +22,20 @@ resource "aws_security_group" "soci_service_sg" {
   }
 }
 
+resource "aws_cloudwatch_log_group" "ecs_logs" {
+  name              = "/ecs/soci-service"
+  retention_in_days = 7
+}
+
 resource "aws_ecs_service" "soci_service" {
   name            = "soci-service"
   cluster         = aws_ecs_cluster.soci_cluster.id
   task_definition = aws_ecs_task_definition.soci_task.arn
-  desired_count   = 0
+  desired_count   = 1
   launch_type     = "FARGATE"
   network_configuration {
     subnets         = module.vpc.private_subnets
-    security_groups = [aws_security_group.vpc_endpoints.id]
+    security_groups = [aws_security_group.soci_service_sg.id]
   }
 
   tags = {
@@ -64,6 +69,18 @@ resource "aws_ecs_task_definition" "soci_task" {
           hostPort      = 8000
         }
       ]
+      logConfiguration = {
+        logDriver = "awslogs"
+        options = {
+          awslogs-group         = aws_cloudwatch_log_group.ecs_logs.name
+          awslogs-region        = data.aws_region.current.name
+          awslogs-stream-prefix = "ecs"
+        }
+      }
     }
   ])
+}
+
+output "service_arn" {
+  value = aws_ecs_service.soci_service.id
 }

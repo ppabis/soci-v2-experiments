@@ -4,7 +4,7 @@ locals {
     set -euxo pipefail
 
     dnf update -y
-    dnf install -y docker
+    dnf install -y docker git
 
     systemctl enable --now docker
     usermod -aG docker ec2-user
@@ -49,6 +49,7 @@ resource "aws_instance" "al2023_x86_64" {
   vpc_security_group_ids = [aws_security_group.ec2_outbound_all.id]
   tags                   = { Name = "soci-v2-al2023-x86_64" }
   depends_on             = [module.vpc]
+  iam_instance_profile   = aws_iam_instance_profile.ec2_role.name
 }
 
 resource "aws_instance" "al2023_arm64" {
@@ -59,6 +60,7 @@ resource "aws_instance" "al2023_arm64" {
   vpc_security_group_ids = [aws_security_group.ec2_outbound_all.id]
   tags                   = { Name = "soci-v2-al2023-arm64" }
   depends_on             = [module.vpc]
+  iam_instance_profile   = aws_iam_instance_profile.ec2_role.name
 }
 
 output "ec2_instance_connect_cli_arm64" {

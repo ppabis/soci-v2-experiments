@@ -8,6 +8,23 @@ locals {
 
     systemctl enable --now docker
     usermod -aG docker ec2-user
+
+    git clone https://github.com/ppabis/soci-v2-experiments /home/ec2-user/soci-v2-experiments
+    git clone https://github.com/ppabis/ecr-aws-soci-index-builder /home/ec2-user/ecr-aws-soci-index-builder
+    
+    cd /home/ec2-user/ecr-aws-soci-index-builder/soci-index-generator-standalone/
+    docker build -t soci-gen:latest .
+    
+    cd /home/ec2-user/soci-v2-experiments/test_image/
+    docker build -t $${repo_url}:$${img_arch} .
+    aws ecr get-login-password | docker login --username AWS --password-stdin $${registry_url}
+    docker push $${repo_url}:$${img_arch}
+
+    curl -LO "https://github.com/oras-project/oras/releases/download/v1.2.2/oras_1.2.2_linux_$${img_arch}.tar.gz"
+    mkdir -p /tmp/oras-install/
+    tar -zxf oras_1.2.2_*.tar.gz -C /tmp/oras-install/
+    mv /tmp/oras-install/oras /usr/local/bin/
+    rm -rf oras_1.2.2_*.tar.gz /tmp/oras-install/
   EOF
 }
 
@@ -42,10 +59,14 @@ resource "aws_security_group" "ec2_outbound_all" {
 }
 
 resource "aws_instance" "al2023_x86_64" {
-  ami                    = data.aws_ssm_parameter.al2023_x86_64.value
-  instance_type          = "t3.micro"
-  subnet_id              = module.vpc.private_subnets[0]
-  user_data              = local.install_docker_user_data
+  ami           = data.aws_ssm_parameter.al2023_x86_64.value
+  instance_type = "t3.micro"
+  subnet_id     = module.vpc.private_subnets[0]
+  user_data = templatestring(local.install_docker_user_data, {
+    repo_url     = aws_ecr_repository.soci_repo.repository_url
+    img_arch     = "amd64"
+    registry_url = split("/", aws_ecr_repository.soci_repo.repository_url)[0]
+  })
   vpc_security_group_ids = [aws_security_group.ec2_outbound_all.id]
   tags                   = { Name = "soci-v2-al2023-x86_64" }
   depends_on             = [module.vpc]
@@ -53,10 +74,14 @@ resource "aws_instance" "al2023_x86_64" {
 }
 
 resource "aws_instance" "al2023_arm64" {
-  ami                    = data.aws_ssm_parameter.al2023_arm64.value
-  instance_type          = "t4g.micro"
-  subnet_id              = module.vpc.private_subnets[0]
-  user_data              = local.install_docker_user_data
+  ami           = data.aws_ssm_parameter.al2023_arm64.value
+  instance_type = "t4g.micro"
+  subnet_id     = module.vpc.private_subnets[0]
+  user_data = templatestring(local.install_docker_user_data, {
+    repo_url     = aws_ecr_repository.soci_repo.repository_url
+    img_arch     = "arm64"
+    registry_url = split("/", aws_ecr_repository.soci_repo.repository_url)[0]
+  })
   vpc_security_group_ids = [aws_security_group.ec2_outbound_all.id]
   tags                   = { Name = "soci-v2-al2023-arm64" }
   depends_on             = [module.vpc]
